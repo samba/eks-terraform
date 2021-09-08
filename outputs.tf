@@ -1,3 +1,17 @@
+data "aws_caller_identity" "current" {}
+
+output "account_id" {
+  value = data.aws_caller_identity.current.account_id
+}
+
+output "caller_arn" {
+  value = data.aws_caller_identity.current.arn
+}
+
+output "caller_user" {
+  value = data.aws_caller_identity.current.user_id
+}
+
 output "cluster_id" {
   description = "EKS cluster ID."
   value       = module.eks.cluster_id
@@ -31,4 +45,26 @@ output "region" {
 output "cluster_name" {
   description = "Kubernetes Cluster Name"
   value       = local.cluster_name_full
+}
+
+output "autoscaler_service_account_name" {
+  value = local.k8s_service_account_name
+}
+
+output "autoscaler_values" {
+  value = <<-EOT
+  awsRegion: ${var.region}
+
+  rbac:
+    create: true
+    serviceAccount:
+      name: ${local.k8s_service_account_name}
+      annotations:
+        # This value should match the ARN of the role created by module.iam_assumable_role_admin in irsa.tf
+        eks.amazonaws.com/role-arn: "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.iam_autoscaler_role_name}"
+
+  autoDiscovery:
+    clusterName: ${local.cluster_name_full}
+    enabled: true
+  EOT
 }

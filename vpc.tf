@@ -23,6 +23,11 @@ variable "use_nat_gateway" {
   default = true
 }
 
+variable "enable_autoscaling" {
+  type = bool
+  default = true
+}
+
 
 provider "aws" {
   region = var.region

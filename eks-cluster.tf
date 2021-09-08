@@ -8,6 +8,7 @@ module "eks" {
   source          = "terraform-aws-modules/eks/aws"
 
   create_eks = ! var.skip_create_eks
+  enable_irsa = var.enable_autoscaling
 
   cluster_name    = local.cluster_name_full
   cluster_version = var.kubernetes_version
@@ -47,6 +48,19 @@ module "eks" {
       update_config = {
         max_unavailable_percentage = 50
       }
+      
+      tags = [
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/enabled"
+          "propagate_at_launch" = "false"
+          "value"               = "true"
+        },
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/${local.cluster_name_full}"
+          "propagate_at_launch" = "false"
+          "value"               = "owned"
+        }
+      ]
     }
   }
 
@@ -66,6 +80,18 @@ module "eks" {
       asg_desired_capacity          = 1
       asg_max_size                  = 10
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
+      tags = [
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/enabled"
+          "propagate_at_launch" = "false"
+          "value"               = "true"
+        },
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/${local.cluster_name_full}"
+          "propagate_at_launch" = "false"
+          "value"               = "owned"
+        }
+      ]
     },
     {
       name                          = "worker-group-2"
@@ -74,15 +100,30 @@ module "eks" {
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
       asg_desired_capacity          = 1
       asg_max_size                  = 6
+      tags = [
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/enabled"
+          "propagate_at_launch" = "false"
+          "value"               = "true"
+        },
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/${local.cluster_name_full}"
+          "propagate_at_launch" = "false"
+          "value"               = "owned"
+        }
+      ]
     },
   ]
 }
 
+
 data "aws_eks_cluster" "cluster" {
+  count = var.skip_create_eks ? 0 : 1
   name = module.eks.cluster_id
 }
 
 data "aws_eks_cluster_auth" "cluster" {
+  count = var.skip_create_eks ? 0 : 1
   name = module.eks.cluster_id
 }
 
