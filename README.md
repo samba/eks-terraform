@@ -9,7 +9,7 @@ Objectives:
 
 Notable defaults:
 * Fully encrypted disks & secrets in cluster
-* Spot instances and autoscaling 
+* Spot instances & autoscaling with various sizes allows for right-sizing to the workload
 
 Notable options for configuration:
 * Autoscaling can be disabled
