@@ -41,6 +41,14 @@ kubectl --namespace=kube-system get pods -l "app.kubernetes.io/name=aws-cluster-
 
 }
 
+setup_ingress (){
+kubectl apply -f https://projectcontour.io/quickstart/contour.yaml
+}
+
+setup_postres_operator(){
+kubectl apply -k github.com/zalando/postgres-operator/manifests
+kubectl apply -k github.com/zalando/postgres-operator/ui/manifests
+}
 
 
 
@@ -49,3 +57,5 @@ provision
 setup_metrics
 setup_dashboard
 setup_autoscaler
+setup_ingress
+setup_postres_operator

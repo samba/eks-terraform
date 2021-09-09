@@ -54,7 +54,7 @@ module "eks" {
       max_capacity = 10
       min_capacity = var.enable_autoscaling ? 1 : 10
       capacity_type  = var.use_spot_block ? "SPOT" : "ON_DEMAND"
-      instance_types = ["t3a.micro"]
+      instance_types = ["t3a.micro", "t3a.small", "t3a.medium", "t3a.large"]
       max_instance_lifectime = 86400  # one day
       
       k8s_labels = {
@@ -102,7 +102,7 @@ module "eks" {
   worker_groups = [
     {
       name                          = "small ${var.kubernetes_version}"
-      instance_type                 = "t2.small"
+      instance_type                 = "t3a.small"
       additional_userdata           = "echo foo bar"
       asg_desired_capacity          = var.enable_autoscaling ? 1 : 10
       asg_min_size                  = var.enable_autoscaling ? 1 : 10
@@ -123,10 +123,30 @@ module "eks" {
     },
     {
       name                          = "medium ${var.kubernetes_version}"
-      instance_type                 = "t2.medium"
+      instance_type                 = "t3a.medium"
       additional_userdata           = "echo foo bar"
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
-      asg_desired_capacity          = var.enable_autoscaling ? 1 : 6
+      asg_desired_capacity          = var.enable_autoscaling ? 0 : 6
+      asg_max_size                  = 6
+      tags = [
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/enabled"
+          "propagate_at_launch" = "false"
+          "value"               = "true"
+        },
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/${local.cluster_name_full}"
+          "propagate_at_launch" = "false"
+          "value"               = "owned"
+        }
+      ]
+    },
+    {
+      name                          = "large ${var.kubernetes_version}"
+      instance_type                 = "t3a.large"
+      additional_userdata           = "echo foo bar"
+      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
+      asg_desired_capacity          = var.enable_autoscaling ? 0 : 6
       asg_max_size                  = 6
       tags = [
         {

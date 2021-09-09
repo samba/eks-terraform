@@ -34,6 +34,9 @@ When you reconfigure your cluster, either by modifying Terraform files or the va
 bash -x up.sh
 ```
 
+*NB*: because the autoscaler will modify the _desired size_ of each autoscaling group, Terraform will report changes having been made outside of Terraform's operations. 
+This is normal, and shouldn't impact application operations.
+
 Destroy the cluster:
 
 ```bash
