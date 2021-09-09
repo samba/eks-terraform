@@ -3,13 +3,15 @@
 
 set -euf -o pipefail
 
-mkdir -p ./temp
+VARFILE="${1:-terraform.tfvars.json}"
 
+provision () {
 terraform init
-terraform apply  -auto-approve -input=false -var cluster_name=test 
+terraform apply  -auto-approve -input=false -var-file=${VARFILE}
 
 # Sets up the kubeconfig credentials for API access
 aws eks --region $(terraform output -raw region) update-kubeconfig --name $(terraform output -raw cluster_name)
+}
 
 
 setup_metrics () {
@@ -43,6 +45,7 @@ kubectl --namespace=kube-system get pods -l "app.kubernetes.io/name=aws-cluster-
 
 
 
+provision
 setup_metrics
 setup_dashboard
 setup_autoscaler

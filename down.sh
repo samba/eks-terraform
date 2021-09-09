@@ -3,4 +3,12 @@ set -euf -o pipefail
 
 # TODO: clean up load balancers & storage volumes created within k8s
 
-terraform destroy
+
+VARFILE="${1:-terraform.tfvars.json}"
+
+# After the cluster is partially down, this may be required to unblock deletion:
+# terraform taint module.eks.kubernetes_config_map.aws_auth[0]
+# terraform state rm module.eks.kubernetes_config_map.aws_auth[0]
+
+terraform destroy -target module.eks.kubernetes_config_map.aws_auth[0]
+terraform destroy -input=false  -var-file=${VARFILE} -var skip_create_eks=true

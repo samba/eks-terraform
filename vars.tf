@@ -6,6 +6,10 @@ variable "region" {
 variable "cluster_name" {
   description = "Name of cluster"
   type = string
+  validation {
+    condition = can(regex("^[a-z0-9][a-z0-9-]{3,31}$", var.cluster_name))
+    error_message = "The cluster_name must be alpha-numeric, allowing hyphenated words."
+  }
 }
 
 variable "skip_create_eks" {
@@ -28,3 +32,7 @@ variable "enable_autoscaling" {
   default = true
 }
 
+variable "use_spot_block" {
+  type = bool
+  default = true
+}

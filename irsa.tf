@@ -1,7 +1,6 @@
 
 
 locals {
-  # cluster_name                  = local.cluster_name_full
   k8s_service_account_namespace = "kube-system"
   k8s_service_account_name      = "cluster-autoscaler-aws-cluster-autoscaler-chart"
   iam_autoscaler_role_name      = "cluster-autoscaler"

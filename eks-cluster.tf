@@ -2,6 +2,10 @@ resource "aws_kms_key" "eks" {
   description = "EKS Secret Encryption Key"
 }
 
+resource "aws_kms_key" "rootkey" {
+  description = "EKS Secret Encryption Key"
+}
+
 
 
 module "eks" {
@@ -30,17 +34,29 @@ module "eks" {
 
   node_groups_defaults = {
     ami_type  = "AL2_x86_64"
+    version = var.kubernetes_version
     disk_size = 50
+    platform = "linux"
+    asg_min_size = 0
+    default_cooldown = 180 # 3 minutes
+    termination_policies = ["OldestInstance", "OldestLaunchConfiguration", "OldestLaunchTemplate"]
+    instance_refresh_enabled = true
+    instance_refresh_strategy = "Rolling"
+    instance_refresh_min_healthy_percentage = 80
+
+    disk_encrypted = true
+    disk_kms_key_id = aws_kms_key.rootkey.id
   }
 
   node_groups = {
     spotgroup = {
-      platform = "linux"
       desired_capacity = 1
       max_capacity = 10
-      min_capacity = 1
-      capacity_type  = "SPOT"
-      instance_types = ["t3a.micro"] // TODO
+      min_capacity = var.enable_autoscaling ? 1 : 10
+      capacity_type  = var.use_spot_block ? "SPOT" : "ON_DEMAND"
+      instance_types = ["t3a.micro"]
+      max_instance_lifectime = 86400  # one day
+      
       k8s_labels = {
         Cluster = local.cluster_name_full
         NodeClass = "SPOT"
@@ -48,7 +64,7 @@ module "eks" {
       update_config = {
         max_unavailable_percentage = 50
       }
-      
+
       tags = [
         {
           "key"                 = "k8s.io/cluster-autoscaler/enabled"
@@ -70,14 +86,26 @@ module "eks" {
 
   workers_group_defaults = {
     root_volume_type = "gp2"
+    platform = "linux"
+    asg_min_size = 0
+    termination_policies = ["OldestInstance", "OldestLaunchConfiguration", "OldestLaunchTemplate"]
+    instance_refresh_enabled = true
+    instance_refresh_strategy = "Rolling"
+    instance_refresh_min_healthy_percentage = 80
+    capacity_rebalance = true
+    # instance_refresh_instance_warmup = 60
+    default_cooldown = 180 # 3 minutes
+    root_encrypted = true
+    root_kms_key_id = aws_kms_key.rootkey.id
   }
 
   worker_groups = [
     {
-      name                          = "worker-group-1"
+      name                          = "small ${var.kubernetes_version}"
       instance_type                 = "t2.small"
       additional_userdata           = "echo foo bar"
-      asg_desired_capacity          = 1
+      asg_desired_capacity          = var.enable_autoscaling ? 1 : 10
+      asg_min_size                  = var.enable_autoscaling ? 1 : 10
       asg_max_size                  = 10
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
       tags = [
@@ -94,11 +122,11 @@ module "eks" {
       ]
     },
     {
-      name                          = "worker-group-2"
+      name                          = "medium ${var.kubernetes_version}"
       instance_type                 = "t2.medium"
       additional_userdata           = "echo foo bar"
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
-      asg_desired_capacity          = 1
+      asg_desired_capacity          = var.enable_autoscaling ? 1 : 6
       asg_max_size                  = 6
       tags = [
         {
