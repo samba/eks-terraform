@@ -5,6 +5,9 @@ set -euf -o pipefail
 
 VARFILE="${1:-terraform.tfvars.json}"
 
+# the update-kubeconfig step in provision() fails when kubeconfig is undefined
+export KUBECONFIG="${KUBECONFIG:-./eks.kubeconfig.yaml}"
+
 provision () {
 terraform init
 terraform apply  -auto-approve -input=false -var-file=${VARFILE}
