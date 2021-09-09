@@ -45,6 +45,7 @@ bash -x down.sh
 - A nice CLI wrapper, perhaps
 - A pre-generated admin service account for attaching other management apps
 - Smarter automation of security groups
+- Cleaner configuration of node groups (right now it seems really disjoint to me)
 - Validate the behavior of running applications (e.g. a database) during upgrade
 
 [learn-terraform-eks]: https://github.com/hashicorp/learn-terraform-provision-eks-cluster "learn-terraform-provisioner-eks-cluster"
