@@ -8,6 +8,9 @@ VARFILE="${1:-terraform.tfvars.json}"
 # the update-kubeconfig step in provision() fails when kubeconfig is undefined
 export KUBECONFIG="${KUBECONFIG:-./eks.kubeconfig.yaml}"
 
+touch ${KUBECONFIG}
+chmod 0600 ${KUBECONFIG}
+
 provision () {
 terraform init
 terraform apply  -auto-approve -input=false -var-file=${VARFILE}
@@ -42,9 +45,12 @@ helm install cluster-autoscaler --namespace kube-system autoscaler/cluster-autos
 sleep 10
 kubectl --namespace=kube-system get pods -l "app.kubernetes.io/name=aws-cluster-autoscaler"
 
+# TODO: give the autoscaler very high priority class, to ensure it will recover correctly when nodes drop
+
 }
 
 setup_ingress (){
+# TODO: ensure pod-anti-affinity to spread replicas across multiple nodes
 kubectl apply -f https://projectcontour.io/quickstart/contour.yaml
 }
 
