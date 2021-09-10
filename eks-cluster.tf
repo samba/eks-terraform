@@ -83,6 +83,7 @@ module "eks" {
 
   worker_create_cluster_primary_security_group_rules = true
 
+  // TODO: restructure this to be dynamically configurable by vars
 
   workers_group_defaults = {
     root_volume_type = "gp2"
@@ -161,6 +162,73 @@ module "eks" {
         }
       ]
     },
+
+    {
+      name                          = "xlarge ${var.kubernetes_version}"
+      instance_type                 = "t3a.xlarge"
+      additional_userdata           = "echo foo bar"
+      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
+      asg_desired_capacity          = var.enable_autoscaling ? 0 : 6
+      asg_max_size                  = 6
+      tags = [
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/enabled"
+          "propagate_at_launch" = "false"
+          "value"               = "true"
+        },
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/${local.cluster_name_full}"
+          "propagate_at_launch" = "false"
+          "value"               = "owned"
+        }
+      ]
+    },
+
+
+     {
+      name                          = "2xlarge ${var.kubernetes_version}"
+      instance_type                 = "t3a.2xlarge"
+      additional_userdata           = "echo foo bar"
+      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
+      asg_desired_capacity          = var.enable_autoscaling ? 0 : 6
+      asg_max_size                  = 6
+      tags = [
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/enabled"
+          "propagate_at_launch" = "false"
+          "value"               = "true"
+        },
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/${local.cluster_name_full}"
+          "propagate_at_launch" = "false"
+          "value"               = "owned"
+        }
+      ]
+    },
+
+
+
+     {
+      name                          = "4xlarge ${var.kubernetes_version}"
+      instance_type                 = "m5a.4xlarge"
+      additional_userdata           = "echo foo bar"
+      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
+      asg_desired_capacity          = var.enable_autoscaling ? 0 : 6
+      asg_max_size                  = 6
+      tags = [
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/enabled"
+          "propagate_at_launch" = "false"
+          "value"               = "true"
+        },
+        {
+          "key"                 = "k8s.io/cluster-autoscaler/${local.cluster_name_full}"
+          "propagate_at_launch" = "false"
+          "value"               = "owned"
+        }
+      ]
+    },
+
   ]
 }
 
