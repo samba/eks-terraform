@@ -20,6 +20,16 @@ Notable options for configuration:
 Tested upgrade path from Kubernetes 1.20 to 1.21.
 Upgrades are slow, mainly due to unobservable control plane processes in EKS.
 
+## Addons
+
+This automation deploys the following additional software components:
+
+* [Zalando PostgreSQL operator][zalando-pgsql-operator] and its [UI][zalando-ui] for easily deploying and managing database clusters ([user guide][zalando-user-guide], [API reference][zalando-reference])
+* [Contour ingress controller][projcontour] for easily deploying, exposing, and routing web services ([Gateway API guide][contour-gateway-api], [tutorial video][contour-101-howto-vid])
+
+
+Additional components may be added in the future.
+
 ## Usage
 
 Configure your cluster details in `terraform.tfvars.json`.
@@ -55,3 +65,10 @@ bash -x down.sh
 
 [learn-terraform-eks]: https://github.com/hashicorp/learn-terraform-provision-eks-cluster "learn-terraform-provisioner-eks-cluster"
 [companion]: https://learn.hashicorp.com/terraform/kubernetes/provision-eks-cluster "Provision an EKS Cluster learn guide"
+[zalando-pgsql-operator]: https://github.com/zalando/postgres-operator
+[zalando-ui]: https://github.com/zalando/postgres-operator/blob/master/docs/operator-ui.md
+[zalando-user-guide]: https://github.com/zalando/postgres-operator/blob/master/docs/user.md
+[zalando-reference]: https://github.com/zalando/postgres-operator/blob/master/docs/reference/cluster_manifest.md
+[contour-101-howto-vid]: https://www.youtube.com/watch?v=xUJbTnN3Dmw
+[projcontour]: https://projectcontour.io
+[contour-gateway-api]: https://projectcontour.io/guides/gateway-api/
